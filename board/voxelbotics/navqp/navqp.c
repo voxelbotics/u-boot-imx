@@ -539,6 +539,7 @@ int board_late_init(void)
 {
 #ifdef CONFIG_ENV_IS_IN_MMC
 	board_late_mmc_env_init();
+	env_set("mmcroot", "/dev/mmcblk2p3 rootwait rw");
 #endif
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
 	env_set("board_name", "EVK");
