@@ -204,7 +204,7 @@ struct tcpc_port_config port2_config = {
 	.disable_pd = true,
 };
 
-// EVK IOs are here::: 
+// EVK IOs are here:::
 // #define USB_TYPEC_SEL IMX_GPIO_NR(4, 20)
 // #define USB_TYPEC_EN IMX_GPIO_NR(2, 20)
 //
@@ -275,12 +275,12 @@ static int setup_typec(void)
 
 		/* Enable PER 12V regulator */
 		//dm_gpio_set_dir_flags(&per_12v_desc, GPIOD_IS_OUT | GPIOD_IS_OUT_ACTIVE);
-		
+
 
 	}
 
-	
-	
+
+
 	debug("tcpc_init port 1\n");
 	ret = tcpc_init(&port1, port1_config, NULL);
         if (ret) {
@@ -538,8 +538,15 @@ int board_init(void)
 int board_late_init(void)
 {
 #ifdef CONFIG_ENV_IS_IN_MMC
+	char mmcblk[32];
+	u32 dev_no = mmc_get_env_dev();
+	/* rootfs partition number is boot partition + 2 */
+	int part = env_get_ulong("mmcpart", 10, CONFIG_SYS_MMC_IMG_LOAD_PART) + 2;
+
 	board_late_mmc_env_init();
-	env_set("mmcroot", "/dev/mmcblk2p3 rootwait rw");
+	sprintf(mmcblk, "/dev/mmcblk%dp%d rootwait rw",
+		mmc_map_to_kernel_blk(dev_no), part);
+	env_set("mmcroot", mmcblk);
 #endif
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
 	env_set("board_name", "EVK");
