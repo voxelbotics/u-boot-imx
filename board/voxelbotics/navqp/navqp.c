@@ -542,7 +542,7 @@ int board_late_init(void)
 	u32 dev_no = mmc_get_env_dev();
 	/* rootfs partition number is boot partition + 2 for eMMC and + 1 for SD */
 	int part = env_get_ulong("mmcpart", 10, CONFIG_SYS_MMC_IMG_LOAD_PART) +
-	    dev_no == 1 ? 1 /* SD boot */ : 2 /* eMMC boot */;
+	    (dev_no == 1 ? 1 /* SD boot */ : 2 /* eMMC boot */);
 
 	board_late_mmc_env_init();
 	sprintf(mmcblk, "/dev/mmcblk%dp%d rootwait rw",
