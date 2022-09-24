@@ -35,6 +35,7 @@ struct disk_partition;
 #define MAX_LFN_SLOT	20
 
 /* Filesystem identifiers */
+#define FAT_SIGN	"FAT     "
 #define FAT12_SIGN	"FAT12   "
 #define FAT16_SIGN	"FAT16   "
 #define FAT32_SIGN	"FAT32   "
