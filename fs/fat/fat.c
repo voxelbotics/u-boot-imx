@@ -540,7 +540,8 @@ read_bootsectandvi(boot_sector *bs, volume_info *volinfo, int *fatsize)
 			*fatsize = 12;
 			goto exit;
 		}
-		if (strncmp(FAT16_SIGN, vistart->fs_type, SIGNLEN) == 0) {
+		if (strncmp(FAT16_SIGN, vistart->fs_type, SIGNLEN) == 0 ||
+		    strncmp(FAT_SIGN, vistart->fs_type, SIGNLEN) == 0) {
 			*fatsize = 16;
 			goto exit;
 		}
