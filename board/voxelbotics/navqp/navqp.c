@@ -53,6 +53,29 @@ static void setup_gpmi_nand(void)
 }
 #endif
 
+int board_phys_sdram_size(phys_size_t *size)
+{
+#ifdef PHYS_SDRAM_2_SIZE
+	volatile unsigned int *ptr = (volatile unsigned int *)0x40000000;
+#endif
+	if (!size)
+		return -EINVAL;
+
+	*size = PHYS_SDRAM_SIZE;
+
+#ifdef PHYS_SDRAM_2_SIZE
+	invalidate_dcache_range((ulong)ptr, (ulong)(ptr + 1));
+
+	if (ptr[0] == 0xBEAFBEAF) {
+		*size += 0x40000000;
+	} else {
+		*size += PHYS_SDRAM_2_SIZE;
+	}
+#endif
+
+	return 0;
+}
+
 int board_early_init_f(void)
 {
 	struct wdog_regs *wdog = (struct wdog_regs *)WDOG1_BASE_ADDR;

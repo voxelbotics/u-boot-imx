@@ -33,7 +33,7 @@
 	memory@40000000 {
 		device_type = "memory";
 		reg = <0x0 0x40000000 0 0xc0000000>,
-		      <0x1 0x00000000 0 0xc0000000>;
+		      <0x1 0x00000000 1 0x40000000>;
 	};
 
 	reg_can1_stby: regulator-can1-stby {
@@ -677,7 +677,7 @@
 		>;
 	};
 
-	pinctrl_typec1_mux: typec1muxgrp { // USB1_SS_SEL -- routed to the SECOND port, in the NavQ+ this IO moved to SAI5_RXD1 
+	pinctrl_typec1_mux: typec1muxgrp { // USB1_SS_SEL -- routed to the SECOND port, in the NavQ+ this IO moved to SAI5_RXD1
 		fsl,pins = <
 			/* MX8MP_IOMUXC_SAI1_MCLK__GPIO4_IO20	0x16 */
 			MX8MP_IOMUXC_SAI5_RXD1__GPIO3_IO22	0x16
