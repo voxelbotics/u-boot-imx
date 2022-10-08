@@ -28,6 +28,8 @@
 #include <mmc.h>
 #include <asm/arch/ddr.h>
 
+extern struct dram_timing_info dram_micron_8gb_timing;
+
 DECLARE_GLOBAL_DATA_PTR;
 
 int spl_board_boot_device(enum boot_device boot_dev_spl)
@@ -56,9 +58,46 @@ int spl_board_boot_device(enum boot_device boot_dev_spl)
 #endif
 }
 
+#define DDR_BASE 0x40000000ULL
+#define MIRROR   0xC0000000ULL
+
 void spl_dram_init(void)
 {
-	ddr_init(&dram_timing);
+	int ret;
+	volatile unsigned int *ptr;
+
+	ret = ddr_init(&dram_micron_8gb_timing);
+
+	if(ret == 0)
+	{
+		ptr = (volatile unsigned int *)DDR_BASE;
+		ptr[0] = 0xCAFEBABE;
+
+		ptr = (volatile unsigned int *)MIRROR;
+		ptr[0] = 0xBEAFBEAF;
+
+		invalidate_dcache_range((ulong)DDR_BASE,
+					(ulong)DDR_BASE + 4);
+		invalidate_dcache_range((ulong)MIRROR,
+					(ulong)MIRROR + 4);
+
+		ptr = (volatile unsigned int *)DDR_BASE;
+
+		if (ptr[0] == 0xBEAFBEAF) {
+			printf("4GB\n");
+			printf ("Re-training for 4GByte Kingston memory\n");
+			ddr_init(&dram_timing);
+			/* Indicate 4GB chip to board_phys_sdram_size */
+			ptr[0] = 0xBEAFBEAF;
+		}
+	} else {
+		printf("8GB training failed\n");
+		printf ("Re-training for 4GByte Kingston memory\n");
+		ddr_init(&dram_timing);
+		/* Indicate 4GB chip to board_phys_sdram_size */
+		ptr = (volatile unsigned int *)DDR_BASE;
+		ptr[0] = 0xBEAFBEAF;
+	}
 }
 
 void spl_board_init(void)
