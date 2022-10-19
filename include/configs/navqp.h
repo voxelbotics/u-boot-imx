@@ -1,10 +1,11 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 /*
+ * Copyright 2022 Voxelbotics
  * Copyright 2019 NXP
  */
 
-#ifndef __IMX8MP_EVK_H
-#define __IMX8MP_EVK_H
+#ifndef __NAVQP_EVK_H
+#define __NAVQP_EVK_H
 
 #include <linux/sizes.h>
 #include <linux/stringify.h>
@@ -200,7 +201,7 @@
 #define PHYS_SDRAM			0x40000000
 #define PHYS_SDRAM_SIZE			0xC0000000	/* 3 GB */
 #define PHYS_SDRAM_2			0x100000000
-#ifdef CONFIG_TARGET_IMX8MP_DDR4_EVK
+#ifdef CONFIG_TARGET_NAVQP
 #define PHYS_SDRAM_2_SIZE		0x40000000	/* 1 GB */
 #else
 #define PHYS_SDRAM_2_SIZE		0xC0000000	/* 3 GB */
@@ -217,7 +218,7 @@
 
 #define CONFIG_IMX_BOOTAUX
 
-#ifdef CONFIG_TARGET_IMX8MP_DDR4_EVK
+#ifdef CONFIG_TARGET_NAVQP
 #define CONFIG_SYS_FSL_USDHC_NUM	1
 #else
 #define CONFIG_SYS_FSL_USDHC_NUM	2
@@ -240,9 +241,5 @@
 #define CONFIG_USB_MAX_CONTROLLER_COUNT         2
 #define CONFIG_USBD_HS
 #define CONFIG_USB_GADGET_VBUS_DRAW 2
-
-#ifdef CONFIG_ANDROID_SUPPORT
-#include "imx8mp_evk_android.h"
-#endif
 
 #endif
