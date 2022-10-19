@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: (GPL-2.0+ OR MIT)
 /*
+ * Copyright 2022 Voxelbotics
  * Copyright 2019 NXP
  */
 
@@ -9,8 +10,8 @@
 #include "imx8mp.dtsi"
 
 / {
-	model = "NXP i.MX8MPlus LPDDR4 EVK board";
-	compatible = "fsl,imx8mp-evk", "fsl,imx8mp";
+	model = "Voxelbotics NAVQ+ board";
+	compatible = "voxelbotics,navqp", "fsl,imx8mp-evk", "fsl,imx8mp";
 
 	chosen {
 		bootargs = "console=ttymxc1,115200";
@@ -69,22 +70,21 @@
 		startup-delay-us = <100>;
 		off-on-delay-us = <12000>;
 	};
-
+/*
 	dsi_host: dsi-host {
 		compatible = "samsung,sec-mipi-dsi";
 		status = "okay";
 	};
+*/
 
+/*
 	rm67199_panel {
 		compatible = "raydium,rm67199";
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_mipi_dsi_en>;
 		reset-gpio = <&gpio1 8 GPIO_ACTIVE_LOW>;
 		dsi-lanes = <4>;
-		video-mode = <2>;	/* 0: burst mode
-					 * 1: non-burst mode with sync event
-					 * 2: non-burst mode with sync pulse
-					 */
+		video-mode = <2>;
 		panel-width-mm = <68>;
 		panel-height-mm = <121>;
 		status = "okay";
@@ -109,6 +109,7 @@
 			};
 		};
 	};
+*/
 };
 
 &flexcan1 {
@@ -306,7 +307,7 @@
 	scl-gpios = <&gpio5 16 GPIO_ACTIVE_HIGH>;
 	sda-gpios = <&gpio5 17 GPIO_ACTIVE_HIGH>;
 	status = "okay";
-
+/*
 	adv_bridge: adv7535@3d {
 		compatible = "adi,adv7533";
 		reg = <0x3d>;
@@ -360,6 +361,7 @@
 			};
 		};
 	};
+*/
 };
 
 &i2c3 {
@@ -371,14 +373,23 @@
 	sda-gpios = <&gpio5 19 GPIO_ACTIVE_HIGH>;
 	status = "okay";
 
-	pca6416: gpio@20 {
-		compatible = "ti,tca6416";
-		reg = <0x20>;
-		gpio-controller;
-		#gpio-cells = <2>;
-	};
 };
 
+
+
+&i2c4 {
+        clock-frequency = <100000>;
+        pinctrl-names = "default", "gpio";
+        pinctrl-0 = <&pinctrl_i2c4>;
+        pinctrl-1 = <&pinctrl_i2c4_gpio>;
+        scl-gpios = <&gpio5 20 GPIO_ACTIVE_HIGH>;
+        sda-gpios = <&gpio5 21 GPIO_ACTIVE_HIGH>;
+        status = "okay";
+
+};
+
+
+/*
 &lcdif1 {
 	status = "okay";
 };
@@ -398,7 +409,7 @@
 		};
 	};
 };
-
+*/
 &snvs_pwrkey {
 	status = "okay";
 };
@@ -452,10 +463,12 @@
 };
 
 &usb_dwc3_1 {
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_usb1_vbus>;
-	dr_mode = "host";
-	status = "okay";
+        dr_mode = "otg";
+        hnp-disable;
+        srp-disable;
+        adp-disable;
+        usb-role-switch;
+        status = "okay";
 };
 
 &usdhc2 {
@@ -593,6 +606,14 @@
 		>;
 	};
 
+        pinctrl_i2c4: i2c4grp {
+                fsl,pins = <
+                        MX8MP_IOMUXC_I2C4_SCL__I2C4_SCL                 0x400001c3
+                        MX8MP_IOMUXC_I2C4_SDA__I2C4_SDA                 0x400001c3
+                >;
+        };
+
+
 	pinctrl_i2c1_gpio: i2c1grp-gpio {
 		fsl,pins = <
 			MX8MP_IOMUXC_I2C1_SCL__GPIO5_IO14        	0x1c3
@@ -614,11 +635,20 @@
 		>;
 	};
 
+        pinctrl_i2c4_gpio: i2c4grp-gpio {
+                fsl,pins = <
+                        MX8MP_IOMUXC_I2C4_SCL__GPIO5_IO20               0x1c3
+                        MX8MP_IOMUXC_I2C4_SDA__GPIO5_IO21               0x1c3
+                >;
+        };
+
+/*
 	pinctrl_mipi_dsi_en: mipi_dsi_en {
 		fsl,pins = <
 			MX8MP_IOMUXC_GPIO1_IO08__GPIO1_IO08	0x16
 		>;
 	};
+*/
 
 	pinctrl_pmic: pmicirq {
 		fsl,pins = <
@@ -626,15 +656,30 @@
 		>;
 	};
 
-	pinctrl_typec: typec1grp {
+
+	pinctrl_typec0: typec0grp {  // TCPC_nINT0 -- does not exist in EVK, the NavQ+ has this  IO at SAI5_RXD2
+                fsl,pins = <
+                        MX8MP_IOMUXC_SAI3_RXFS__GPIO4_IO28      0x1c4
+                >;
+        };
+
+        pinctrl_typec0_mux: typec0muxgrp { // USB0_SS_SEL -- does not exist in EVK, the NavQ+ has this  IO at SAI5_RXD0
+                fsl,pins = <
+                        MX8MP_IOMUXC_SAI5_RXD0__GPIO3_IO21      0x16
+                >;
+        };
+
+	pinctrl_typec1: typec1grp {  // TCPC_nINT1 -- routed to the SECOND port, in the NavQ+ this IO moved to SAI5_RXD2
 		fsl,pins = <
-			MX8MP_IOMUXC_SAI1_TXD7__GPIO4_IO19	0x1c4
+			/* MX8MP_IOMUXC_SAI1_TXD7__GPIO4_IO19	0x1c4 */
+			MX8MP_IOMUXC_SAI5_RXD2__GPIO3_IO23	0x1c4
 		>;
 	};
 
-	pinctrl_typec_mux: typec1muxgrp {
+	pinctrl_typec1_mux: typec1muxgrp { // USB1_SS_SEL -- routed to the SECOND port, in the NavQ+ this IO moved to SAI5_RXD1 
 		fsl,pins = <
-			MX8MP_IOMUXC_SAI1_MCLK__GPIO4_IO20	0x16
+			/* MX8MP_IOMUXC_SAI1_MCLK__GPIO4_IO20	0x16 */
+			MX8MP_IOMUXC_SAI5_RXD1__GPIO3_IO22	0x16
 		>;
 	};
 
@@ -650,13 +695,13 @@
 			MX8MP_IOMUXC_UART2_TXD__UART2_DCE_TX	0x140
 		>;
 	};
-
+/*
 	pinctrl_usb1_vbus: usb1grp {
 		fsl,pins = <
 			MX8MP_IOMUXC_GPIO1_IO14__USB2_OTG_PWR	0x19
 		>;
 	};
-
+*/
 	pinctrl_usdhc2: usdhc2grp {
 		fsl,pins = <
 			MX8MP_IOMUXC_SD2_CLK__USDHC2_CLK	0x190
