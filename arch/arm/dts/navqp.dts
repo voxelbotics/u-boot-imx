@@ -444,12 +444,13 @@
 	usb-role-switch;
 	role-switch-default-mode = "none";
 	status = "okay";
-
+/*
 	port {
 		usb3_drd_sw: endpoint {
 			remote-endpoint = <&typec_dr_sw>;
 		};
 	};
+*/
 };
 
 &usb3_phy1 {
@@ -798,3 +799,5 @@
 		>;
 	};
 };
+
+#include "navqp-u-boot.dtsi"
