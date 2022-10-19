@@ -118,6 +118,8 @@
 	CONFIG_MFG_ENV_SETTINGS \
 	JAILHOUSE_ENV \
 	BOOTENV \
+	"enable_3v3p=mw.l 0x303301D0 5; mw.l 0x30330430 0x6; mw.l 0x30240000 0x4; mw.l 0x30240004 0x4\0" \
+	"enable_5v0p=mw.l 0x30330118 5; mw.l 0x30330378 0x6; mw.l 0x30220000 0x0000; mw.l 0x30220004 0x4000\0" \
 	"scriptaddr=0x43500000\0" \
 	"kernel_addr_r=" __stringify(CONFIG_SYS_LOAD_ADDR) "\0" \
 	"bsp_script=boot.scr\0" \
@@ -173,6 +175,7 @@
 			"fi; " \
 		"fi;\0" \
 	"bsp_bootcmd=echo Running BSP bootcmd ...; " \
+        "echo Enabling 3V3P/5VP; run enable_3v3p; run enable_5v0p; " \
 		"mmc dev ${mmcdev}; if mmc rescan; then " \
 		   "if run loadbootscript; then " \
 			   "run bootscript; " \
@@ -196,7 +199,7 @@
 
 #define CONFIG_MMCROOT			"/dev/mmcblk1p2"  /* USDHC2 */
 
-/* Totally 6GB DDR */
+/* Totally 4GB DDR --- KINGSTON*/
 #define CONFIG_SYS_SDRAM_BASE		0x40000000
 #define PHYS_SDRAM			0x40000000
 #define PHYS_SDRAM_SIZE			0xC0000000	/* 3 GB */
@@ -204,7 +207,7 @@
 #ifdef CONFIG_TARGET_NAVQP
 #define PHYS_SDRAM_2_SIZE		0x40000000	/* 1 GB */
 #else
-#define PHYS_SDRAM_2_SIZE		0xC0000000	/* 3 GB */
+#define PHYS_SDRAM_2_SIZE		0x40000000	/* 1 GB */
 #endif
 
 #define CONFIG_MXC_UART_BASE		UART2_BASE_ADDR
