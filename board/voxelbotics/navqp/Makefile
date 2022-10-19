@@ -1,10 +1,11 @@
 #
+# Copyright 2022 Voxelbotics
 # Copyright 2019 NXP
 #
 # SPDX-License-Identifier:      GPL-2.0+
 #
 
-obj-y += imx8mp_evk.o
+obj-y += navqp.o
 
 ifdef CONFIG_SPL_BUILD
 obj-y += spl.o
