@@ -561,16 +561,7 @@ int board_init(void)
 int board_late_init(void)
 {
 #ifdef CONFIG_ENV_IS_IN_MMC
-	char mmcblk[32];
-	u32 dev_no = mmc_get_env_dev();
-	/* rootfs partition number is boot partition + 2 for eMMC and + 1 for SD */
-	int part = env_get_ulong("mmcpart", 10, 1) +
-	    (dev_no == 1 ? 1 /* SD boot */ : 2 /* eMMC boot */);
-
 	board_late_mmc_env_init();
-	sprintf(mmcblk, "/dev/mmcblk%dp%d rootwait rw",
-		mmc_map_to_kernel_blk(dev_no), part);
-	env_set("mmcroot", mmcblk);
 #endif
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
 	env_set("board_name", "EVK");
