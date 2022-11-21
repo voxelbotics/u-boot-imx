@@ -462,6 +462,11 @@ int board_usb_cleanup(int index, enum usb_init_type init)
 	return ret;
 }
 
+void board_cleanup_before_linux()
+{
+	disconnect_from_pc();
+}
+
 #ifdef CONFIG_USB_TCPC
 /* Not used so far */
 int board_typec_get_mode(int index)
