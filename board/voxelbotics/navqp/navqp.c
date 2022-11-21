@@ -206,7 +206,7 @@ int pd_switch_snk1_enable(struct tcpc_port *port)
 struct tcpc_port_config port1_config = {
 	.i2c_bus = 3, /*i2c4*/
 	.addr = 0x51,
-	.port_type = TYPEC_PORT_UFP,
+	.port_type = TYPEC_PORT_DRP,
 	.max_snk_mv = 20000,
 	.max_snk_ma = 3000,
 	.max_snk_mw = 45000,
@@ -218,39 +218,29 @@ struct tcpc_port_config port1_config = {
 struct tcpc_port_config port2_config = {
 	.i2c_bus = 3, /*i2c4*/
 	.addr = 0x52,
-	.port_type = TYPEC_PORT_UFP,
+	.port_type = TYPEC_PORT_DRP,
 	.max_snk_mv = 20000,
 	.max_snk_ma = 3000,
 	.max_snk_mw = 45000,
 	.op_snk_mv = 15000,
 	.switch_setup_func = &pd_switch_snk1_enable,
-	.disable_pd = true,
+	.disable_pd = false,
 };
 
-// EVK IOs are here:::
-// #define USB_TYPEC_SEL IMX_GPIO_NR(4, 20)
-// #define USB_TYPEC_EN IMX_GPIO_NR(2, 20)
-//
 // NavQ+ IOs are here: SAI5_RXD0 SAI5_RXD1
 #define USB_TYPEC_SEL_PORT1 IMX_GPIO_NR(3, 21)		// SAI5_RXD0 -- USB1_SEL_3V3
 #define USB_TYPEC_SEL_PORT2 IMX_GPIO_NR(3, 22)		// SAI5_RXD1 -- USB2_SEL_3V3
 
-// USB1_TYPEC_EN_B does not exist in the NavQ
-
-
-// TBD: review, maybe it's better to update
 static iomux_v3_cfg_t ss_mux_gpio_port1[] = {
-	//MX8MP_PAD_SAI1_MCLK__GPIO4_IO20 | MUX_PAD_CTRL(NO_PAD_CTRL), //SAI1_MCLK - EVK
 	MX8MP_PAD_SAI5_RXD0__GPIO3_IO21 | MUX_PAD_CTRL(NO_PAD_CTRL), // SAI5_RXD0 -- USB1_SEL_3V3
 };
 
 static iomux_v3_cfg_t ss_mux_gpio_port2[] = {
-        //MX8MP_PAD_SAI1_MCLK__GPIO4_IO20 | MUX_PAD_CTRL(NO_PAD_CTRL), //SAI1_MCLKi
 	MX8MP_PAD_SAI5_RXD1__GPIO3_IO22 | MUX_PAD_CTRL(NO_PAD_CTRL), // SAI5_RXD1 -- USB2_SEL_3V3
 };
 
 
-void ss_mux_selecti_port1(enum typec_cc_polarity pol)
+void ss_mux_select_port1(enum typec_cc_polarity pol)
 {
 	if (pol == TYPEC_POLARITY_CC1)
 		gpio_direction_output(USB_TYPEC_SEL_PORT1, 0);
@@ -266,77 +256,37 @@ void ss_mux_select_port2(enum typec_cc_polarity pol)
                 gpio_direction_output(USB_TYPEC_SEL_PORT2, 1);
 }
 
-
-
 static int setup_typec(void)
 {
 	int ret;
-//	struct gpio_desc per_12v_desc;
 
 	debug("tcpc_init port 2\n");
-	ret = tcpc_init(&port2, port2_config, NULL);
+
+	imx_iomux_v3_setup_multiple_pads(ss_mux_gpio_port2, ARRAY_SIZE(ss_mux_gpio_port2));
+	gpio_request(USB_TYPEC_SEL_PORT2, "typec_sel_port2");
+
+	ret = tcpc_init(&port2, port2_config, &ss_mux_select_port2);
 	if (ret) {
 		printf("%s: tcpc port2 init failed, err=%d\n",
 		       __func__, ret);
 	} else if (tcpc_pd_sink_check_charging(&port2)) {
-
 		printf("Power supply on USB2\n");
-		printf("Technically, it's OK to enable all the possible DC/DCs, but later\n");
-
-		/* Enable PER 12V, any check before it? */
-		/*ret = dm_gpio_lookup_name("gpio@20_1", &per_12v_desc);
-		if (ret) {
-			printf("%s lookup gpio@20_1 failed ret = %d\n", __func__, ret);
-			return -ENODEV;
-		}
-
-		ret = dm_gpio_request(&per_12v_desc, "per_12v_en");
-		if (ret) {
-			printf("%s request per_12v failed ret = %d\n", __func__, ret);
-			return -EIO;
-		}*/
-
-		/* Enable PER 12V regulator */
-		//dm_gpio_set_dir_flags(&per_12v_desc, GPIOD_IS_OUT | GPIOD_IS_OUT_ACTIVE);
-
-
 	}
-
-
 
 	debug("tcpc_init port 1\n");
-	ret = tcpc_init(&port1, port1_config, NULL);
-        if (ret) {
-                printf("%s: tcpc port1 init failed, err=%d\n",
-                       __func__, ret);
-        } else if (tcpc_pd_sink_check_charging(&port1)) {
-
-                printf("Power supply on USB1\n");
-                printf("Technically, it's OK to enable all the possible DC/DCs, but later\n");
-	}
-
 
 	imx_iomux_v3_setup_multiple_pads(ss_mux_gpio_port1, ARRAY_SIZE(ss_mux_gpio_port1));
-        imx_iomux_v3_setup_multiple_pads(ss_mux_gpio_port2, ARRAY_SIZE(ss_mux_gpio_port2));
-
-
 	gpio_request(USB_TYPEC_SEL_PORT1, "typec_sel_port1");
-        gpio_request(USB_TYPEC_SEL_PORT2, "typec_sel_port2");
 
-
-	//gpio_request(USB_TYPEC_EN, "typec_en");
-	//gpio_direction_output(USB_TYPEC_EN, 0);
-	/*
-	ret = tcpc_init(&port1, port1_config, &ss_mux_select);
+	ret = tcpc_init(&port1, port1_config, &ss_mux_select_port1);
 	if (ret) {
 		printf("%s: tcpc port1 init failed, err=%d\n",
 		       __func__, ret);
-	} else {
-		return ret;
-	}*/
+	} else if (tcpc_pd_sink_check_charging(&port1)) {
+		printf("Power supply on USB1\n");
+	}
 
-
-	return ret;
+	return 0;
 }
 #endif
 
