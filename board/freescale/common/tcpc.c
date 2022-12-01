@@ -894,9 +894,21 @@ static int tcpc_pd_sink_init(struct tcpc_port *port)
 		return -EPERM;
 	}
 
+	err = tcpc_get_cc_status(port, &pol, &state);
+	if (err || (state != TYPEC_STATE_SNK_POWER15
+		&& state != TYPEC_STATE_SNK_POWER30
+		&& state != TYPEC_STATE_SNK_DEFAULT)) {
+		tcpc_log(port, "TCPC wrong state for dead battery, err = %d, CC = 0x%x\n",
+			err, state);
+		return -EPERM;
+	}
+
 	if (!(valb & TCPC_POWER_STATUS_SINKING_VBUS)) {
 		tcpc_debug_log(port, "SINK VBUS is not enabled for dead battery\n");
-		return -EPERM;
+		/* Enable VBUS sink */
+		err = tcpc_send_command(port, TCPC_CMD_SINK_VBUS);
+		if (err)
+			return err;
 	}
 
 	err = dm_i2c_read(port->i2c_dev, TCPC_ALERT, (uint8_t *)&val, 2);
@@ -910,21 +922,12 @@ static int tcpc_pd_sink_init(struct tcpc_port *port)
 		return -EPERM;
 	}
 
-	err = tcpc_get_cc_status(port, &pol, &state);
-	if (err || (state != TYPEC_STATE_SNK_POWER15
-		&& state != TYPEC_STATE_SNK_POWER30
-		&& state != TYPEC_STATE_SNK_DEFAULT)) {
-		tcpc_log(port, "TCPC wrong state for dead battery, err = %d, CC = 0x%x\n",
-			err, state);
-		return -EPERM;
-	} else {
-		err = tcpc_set_plug_orientation(port, pol);
-		if (err) {
-			tcpc_log(port, "TCPC set plug orientation failed, err = %d\n", err);
-			return err;
-		}
-		port->pd_state = ATTACHED;
+	err = tcpc_set_plug_orientation(port, pol);
+	if (err) {
+		tcpc_log(port, "TCPC set plug orientation failed, err = %d\n", err);
+		return err;
 	}
+	port->pd_state = ATTACHED;
 
 	err = dm_i2c_read(port->i2c_dev, TCPC_POWER_CTRL, (uint8_t *)&valb, 1);
 	if (err) {
