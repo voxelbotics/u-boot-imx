@@ -183,25 +183,6 @@ static int setup_pd_switch(uint8_t i2c_bus, uint8_t addr)
 	return 0;
 }
 
-int pd_switch_snk0_enable(struct tcpc_port *port)
-{
-	if (port == &port1) {
-		debug("Setup pd switch on port 1\n");
-		return setup_pd_switch(3, 0x72);
-	} else
-		return -EINVAL;
-}
-
-int pd_switch_snk1_enable(struct tcpc_port *port)
-{
-        if (port == &port2) {
-                debug("Setup pd switch on port 2\n");
-                return setup_pd_switch(3, 0x73);
-        } else
-                return -EINVAL;
-}
-
-
 /* so far both the ports are equal -- sink ports without power delivery */
 struct tcpc_port_config port1_config = {
 	.i2c_bus = 3, /*i2c4*/
@@ -211,7 +192,6 @@ struct tcpc_port_config port1_config = {
 	.max_snk_ma = 3000,
 	.max_snk_mw = 45000,
 	.op_snk_mv = 15000,
-	.switch_setup_func = &pd_switch_snk0_enable,
 	.disable_pd = false,
 };
 
@@ -223,7 +203,6 @@ struct tcpc_port_config port2_config = {
 	.max_snk_ma = 3000,
 	.max_snk_mw = 45000,
 	.op_snk_mv = 15000,
-	.switch_setup_func = &pd_switch_snk1_enable,
 	.disable_pd = false,
 };
 
@@ -273,6 +252,9 @@ static int setup_typec(void)
 		printf("Power supply on USB2\n");
 	}
 
+	debug("Setup pd switch on port 2\n");
+	setup_pd_switch(3, 0x73);
+
 	debug("tcpc_init port 1\n");
 
 	imx_iomux_v3_setup_multiple_pads(ss_mux_gpio_port1, ARRAY_SIZE(ss_mux_gpio_port1));
@@ -285,6 +267,9 @@ static int setup_typec(void)
 	} else if (tcpc_pd_sink_check_charging(&port1)) {
 		printf("Power supply on USB1\n");
 	}
+
+	debug("Setup pd switch on port 1\n");
+	setup_pd_switch(3, 0x72);
 
 	return 0;
 }
