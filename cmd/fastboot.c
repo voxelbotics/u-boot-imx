@@ -60,7 +60,7 @@ static int do_fastboot_usb(int argc, char *const argv[],
 			pr_err("Error: Wrong USB controller index format\n");
 			return CMD_RET_FAILURE;
 		}
-#ifdef CONFIG_FASTBOOT_USB_DEV
+#if CONFIG_FASTBOOT_USB_DEV != -1
 		controller_index = CONFIG_FASTBOOT_USB_DEV;
 #endif
 	}
