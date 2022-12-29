@@ -298,7 +298,7 @@ static int setup_typec(void)
 #define HSIO_GPR_REG_0_USB_CLOCK_MODULE_EN          (0x1U << HSIO_GPR_REG_0_USB_CLOCK_MODULE_EN_SHIFT)
 
 
-static struct dwc3_device dwc3_device_data = {
+static struct dwc3_device  dwc3_device_data1 = {
 #ifdef CONFIG_SPL_BUILD
 	.maximum_speed = USB_SPEED_HIGH,
 #else
@@ -307,6 +307,18 @@ static struct dwc3_device dwc3_device_data = {
 	.base = USB1_BASE_ADDR,
 	.dr_mode = USB_DR_MODE_PERIPHERAL,
 	.index = 0,
+	.power_down_scale = 2,
+};
+
+static struct dwc3_device dwc3_device_data2 = {
+#ifdef CONFIG_SPL_BUILD
+	.maximum_speed = USB_SPEED_HIGH,
+#else
+	.maximum_speed = USB_SPEED_SUPER,
+#endif
+	.base = USB2_BASE_ADDR,
+	.dr_mode = USB_DR_MODE_PERIPHERAL,
+	.index = 1,
 	.power_down_scale = 2,
 };
 
@@ -361,19 +373,31 @@ static void dwc3_nxp_usb_phy_init(struct dwc3_device *dwc3)
 int board_usb_init(int index, enum usb_init_type init)
 {
 	int ret = 0;
+	struct tcpc_port *port;
+	struct dwc3_device *dwc3_device_data;
+
 	imx8m_usb_power(index, true);
 
-	if (index == 0 && init == USB_INIT_DEVICE) {
+	if (index == 0) {
+		port = &port1;
+		dwc3_device_data = &dwc3_device_data1;
+	} else {
+		port = &port2;
+		dwc3_device_data = &dwc3_device_data2;
+	}
+
+	if (init == USB_INIT_DEVICE) {
 #ifdef CONFIG_USB_TCPC
-		ret = tcpc_setup_ufp_mode(&port1);
-		if (ret)
+		ret = tcpc_setup_ufp_mode(port);
+		if (ret) {
 			return ret;
+		}
 #endif
-		dwc3_nxp_usb_phy_init(&dwc3_device_data);
-		return dwc3_uboot_init(&dwc3_device_data);
-	} else if (index == 0 && init == USB_INIT_HOST) {
+		dwc3_nxp_usb_phy_init(dwc3_device_data);
+		return dwc3_uboot_init(dwc3_device_data);
+	} else if (init == USB_INIT_HOST) {
 #ifdef CONFIG_USB_TCPC
-		ret = tcpc_setup_dfp_mode(&port1);
+		ret = tcpc_setup_dfp_mode(port);
 #endif
 		return ret;
 	}
@@ -384,11 +408,11 @@ int board_usb_init(int index, enum usb_init_type init)
 int board_usb_cleanup(int index, enum usb_init_type init)
 {
 	int ret = 0;
-	if (index == 0 && init == USB_INIT_DEVICE) {
+	if (init == USB_INIT_DEVICE) {
 		dwc3_uboot_exit(index);
-	} else if (index == 0 && init == USB_INIT_HOST) {
+	} else if (init == USB_INIT_HOST) {
 #ifdef CONFIG_USB_TCPC
-		ret = tcpc_disable_src_vbus(&port1);
+		ret = tcpc_disable_src_vbus(index ? &port2 : &port1);
 #endif
 	}
 
@@ -401,6 +425,31 @@ void board_cleanup_before_linux()
 {
 	disconnect_from_pc();
 }
+#ifdef CONFIG_USB_PORT_AUTO
+int board_usb_gadget_port_auto(void)
+{
+	int ret;
+	u32 boot;
+	u16 boot_type;
+	u8 boot_instance;
+
+	ret = g_rom_api->query_boot_infor(QUERY_BT_DEV, &boot,
+					  ((uintptr_t)&boot) ^ QUERY_BT_DEV);
+
+	if (ret != ROM_API_OKAY) {
+		puts("ROMAPI: failure at query_boot_info\n");
+		return -1;
+	}
+
+	boot_type = boot >> 16;
+	boot_instance = (boot >> 8) & 0xff;
+
+	if (boot_type == BT_DEV_TYPE_USB)
+		return boot_instance == 4 ? 1 : 0;
+
+	return -1;
+}
+#endif
 
 #ifdef CONFIG_USB_TCPC
 /* Not used so far */
