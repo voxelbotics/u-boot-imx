@@ -10,6 +10,8 @@
 #include <linux/sizes.h>
 #include <linux/stringify.h>
 #include <asm/arch/imx-regs.h>
+/* Enable USB boot port auto-detection */
+#define CONFIG_USB_PORT_AUTO
 #include "imx_env.h"
 
 #define CONFIG_SYS_BOOTM_LEN		(32 * SZ_1M)
@@ -42,7 +44,7 @@
 
 #define CONFIG_CMD_READ
 #define CONFIG_SERIAL_TAG
-#define CONFIG_FASTBOOT_USB_DEV 0
+#define CONFIG_FASTBOOT_USB_DEV -1
 
 #define CONFIG_REMAKE_ELF
 /* ENET Config */
