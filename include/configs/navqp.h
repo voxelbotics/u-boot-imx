@@ -4,8 +4,8 @@
  * Copyright 2019 NXP
  */
 
-#ifndef __NAVQP_EVK_H
-#define __NAVQP_EVK_H
+#ifndef __NAVQPLUS_H
+#define __NAVQPLUS_H
 
 #include <linux/sizes.h>
 #include <linux/stringify.h>
@@ -219,7 +219,7 @@
 
 #define CONFIG_IMX_BOOTAUX
 
-#ifdef CONFIG_TARGET_NAVQP
+#ifdef CONFIG_TARGET_NAVQPLUS
 #define CONFIG_SYS_FSL_USDHC_NUM	1
 #else
 #define CONFIG_SYS_FSL_USDHC_NUM	2
