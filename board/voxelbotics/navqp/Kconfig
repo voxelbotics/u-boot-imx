@@ -1,4 +1,4 @@
-if TARGET_NAVQP
+if TARGET_NAVQPLUS
 
 config SYS_BOARD
 	default "navqp"

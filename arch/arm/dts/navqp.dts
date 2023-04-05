@@ -10,8 +10,8 @@
 #include "imx8mp.dtsi"
 
 / {
-	model = "Voxelbotics NAVQ+ board";
-	compatible = "voxelbotics,navqp", "fsl,imx8mp-evk", "fsl,imx8mp";
+	model = "Voxelbotics NAVQPlus board";
+	compatible = "voxelbotics,navqplus", "fsl,imx8mp-evk", "fsl,imx8mp";
 
 	chosen {
 		bootargs = "console=ttymxc1,115200";
@@ -658,26 +658,26 @@
 	};
 
 
-	pinctrl_typec0: typec0grp {  // TCPC_nINT0 -- does not exist in EVK, the NavQ+ has this  IO at SAI5_RXD2
+	pinctrl_typec0: typec0grp {  // TCPC_nINT0 -- does not exist in EVK, the NavQPlus has this  IO at SAI5_RXD2
                 fsl,pins = <
                         MX8MP_IOMUXC_SAI3_RXFS__GPIO4_IO28      0x1c4
                 >;
         };
 
-        pinctrl_typec0_mux: typec0muxgrp { // USB0_SS_SEL -- does not exist in EVK, the NavQ+ has this  IO at SAI5_RXD0
+        pinctrl_typec0_mux: typec0muxgrp { // USB0_SS_SEL -- does not exist in EVK, the NavQPlus has this  IO at SAI5_RXD0
                 fsl,pins = <
                         MX8MP_IOMUXC_SAI5_RXD0__GPIO3_IO21      0x16
                 >;
         };
 
-	pinctrl_typec1: typec1grp {  // TCPC_nINT1 -- routed to the SECOND port, in the NavQ+ this IO moved to SAI5_RXD2
+	pinctrl_typec1: typec1grp {  // TCPC_nINT1 -- routed to the SECOND port, in the NavQPlus this IO moved to SAI5_RXD2
 		fsl,pins = <
 			/* MX8MP_IOMUXC_SAI1_TXD7__GPIO4_IO19	0x1c4 */
 			MX8MP_IOMUXC_SAI5_RXD2__GPIO3_IO23	0x1c4
 		>;
 	};
 
-	pinctrl_typec1_mux: typec1muxgrp { // USB1_SS_SEL -- routed to the SECOND port, in the NavQ+ this IO moved to SAI5_RXD1
+	pinctrl_typec1_mux: typec1muxgrp { // USB1_SS_SEL -- routed to the SECOND port, in the NavQPlus this IO moved to SAI5_RXD1
 		fsl,pins = <
 			/* MX8MP_IOMUXC_SAI1_MCLK__GPIO4_IO20	0x16 */
 			MX8MP_IOMUXC_SAI5_RXD1__GPIO3_IO22	0x16
