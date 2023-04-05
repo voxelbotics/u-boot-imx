@@ -95,7 +95,7 @@ int board_early_init_f(void)
 int ft_board_setup(void *blob, struct bd_info *bd)
 {
 #ifdef CONFIG_IMX8M_DRAM_INLINE_ECC
-#ifdef CONFIG_TARGET_NAVQP
+#ifdef CONFIG_TARGET_NAVQPLUS
 	int rc;
 	phys_addr_t ecc_start = 0x120000000;
 	size_t ecc_size = 0x20000000;
@@ -206,7 +206,7 @@ struct tcpc_port_config port2_config = {
 	.disable_pd = false,
 };
 
-// NavQ+ IOs are here: SAI5_RXD0 SAI5_RXD1
+// NavQPlus IOs are here: SAI5_RXD0 SAI5_RXD1
 #define USB_TYPEC_SEL_PORT1 IMX_GPIO_NR(3, 21)		// SAI5_RXD0 -- USB1_SEL_3V3
 #define USB_TYPEC_SEL_PORT2 IMX_GPIO_NR(3, 22)		// SAI5_RXD1 -- USB2_SEL_3V3
 
