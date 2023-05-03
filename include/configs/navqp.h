@@ -243,4 +243,8 @@
 #define CONFIG_USBD_HS
 #define CONFIG_USB_GADGET_VBUS_DRAW 2
 
+#define NAVQP_BOOT_IMAGE_GUID \
+        EFI_GUID(0x1ea7e557, 0xbb97, 0x496e, 0x98, 0xa6, \
+                 0x00, 0x74, 0xcf, 0x7b, 0x55, 0xde)
+
 #endif
