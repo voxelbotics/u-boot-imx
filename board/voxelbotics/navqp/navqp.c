@@ -216,7 +216,7 @@ struct tcpc_port_config port1_config = {
 struct tcpc_port_config port2_config = {
 	.i2c_bus = 3, /*i2c4*/
 	.addr = 0x52,
-	.port_type = TYPEC_PORT_DRP,
+	.port_type = TYPEC_PORT_UFP,
 	.max_snk_mv = 20000,
 	.max_snk_ma = 3000,
 	.max_snk_mw = 45000,
@@ -406,6 +406,8 @@ int board_usb_init(int index, enum usb_init_type init)
 
 	if (init == USB_INIT_DEVICE) {
 #ifdef CONFIG_USB_TCPC
+		if (port->cfg.port_type == TYPEC_PORT_DFP)
+			return -EINVAL;
 		ret = tcpc_setup_ufp_mode(port);
 		if (ret) {
 			return ret;
@@ -415,6 +417,8 @@ int board_usb_init(int index, enum usb_init_type init)
 		return dwc3_uboot_init(dwc3_device_data);
 	} else if (init == USB_INIT_HOST) {
 #ifdef CONFIG_USB_TCPC
+		if (port->cfg.port_type == TYPEC_PORT_UFP)
+			return -EINVAL;
 		ret = tcpc_setup_dfp_mode(port);
 #endif
 		return ret;
@@ -430,7 +434,9 @@ int board_usb_cleanup(int index, enum usb_init_type init)
 		dwc3_uboot_exit(index);
 	} else if (init == USB_INIT_HOST) {
 #ifdef CONFIG_USB_TCPC
-		ret = tcpc_disable_src_vbus(index ? &port2 : &port1);
+		struct tcpc_port *port = index ? &port2 : &port1;
+		if (port->cfg.port_type != TYPEC_PORT_UFP)
+			ret = tcpc_disable_src_vbus(port);
 #endif
 	}
 
